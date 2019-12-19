@@ -20,7 +20,7 @@ class A2
   def initialize(args)
     args.each do |arg|
       name = "hoge_#{arg}"
-      A2.define_hoge(name)
+      A2.define_hoge(name) unless respond_to?(name)
     end
   end
 
