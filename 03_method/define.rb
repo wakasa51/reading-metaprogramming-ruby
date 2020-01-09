@@ -43,36 +43,58 @@ end
 # 次の動作をする OriginalAccessor モジュール を実装する
 # - OriginalAccessorモジュールはincludeされたときのみ、my_attr_accessorメソッドを定義すること
 # - my_attr_accessorはgetter/setterに加えて、boolean値を代入した際のみ真偽値判定を行うaccessorと同名の?メソッドができること
-
 module OriginalAccessor
-  def self.included(base)
-    base.extend(ClassMethods)
+  def self.included(klass)
+    klass.extend(ClassMethod)
   end
 
-  module ClassMethods
-    def my_attr_accessor(*args)
-      args.each do |arg|
-        define_attr(arg)
-      end
-    end
-
-    def define_attr(name)
-      define_method(name) do
-        instance_variable_get(:"@#{name}")
+  module ClassMethod
+    def my_attr_accessor(arg)
+      define_method(arg) do
+        instance_variable_get("@#{arg}")
       end
 
-      define_method("#{name}=") do |value|
-        if value.kind_of?(::TrueClass) || value.kind_of?(::FalseClass) && !self.respond_to?("#{name}?")
-          self.class.define_method("#{name}?") do
-            instance_variable_get(:"@#{name}")
-          end
-        else
-          if self.respond_to?("#{name}?")
-            self.class.remove_method("#{name}?")
+      define_method("#{arg}=") do |n|
+        if [true, false].include?(n)
+          define_singleton_method("#{arg}?") do
+            !!send(arg)
           end
         end
-        instance_variable_set(:"@#{name}", value)
+        instance_variable_set("@#{arg}", n)
       end
     end
   end
 end
+
+# module OriginalAccessor
+#   def self.included(base)
+#     base.extend(ClassMethods)
+#   end
+
+#   module ClassMethods
+#     def my_attr_accessor(*args)
+#       args.each do |arg|
+#         define_attr(arg)
+#       end
+#     end
+
+#     def define_attr(name)
+#       define_method(name) do
+#         instance_variable_get(:"@#{name}")
+#       end
+
+#       define_method("#{name}=") do |value|
+#         if value.kind_of?(::TrueClass) || value.kind_of?(::FalseClass) && !self.respond_to?("#{name}?")
+#           self.class.define_method("#{name}?") do
+#             instance_variable_get(:"@#{name}")
+#           end
+#         else
+#           if self.respond_to?("#{name}?")
+#             self.class.remove_method("#{name}?")
+#           end
+#         end
+#         instance_variable_set(:"@#{name}", value)
+#       end
+#     end
+#   end
+# end
