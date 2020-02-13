@@ -5,7 +5,7 @@ require 'securerandom'
 class TestSimpleRecord < MiniTest::Test
   class Product
     include SimpleModel
-    
+
     attr_accessor :name, :description
   end
 
